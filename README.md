@@ -17,4 +17,4 @@ To build a OAuth enabled shopify integration with Freshworks app below are the s
 4. If you do not have it already, follow the steps as per [getting-started guide](https://github.com/freshworks-developers/bangalore-workshop/blob/main/step-1/getting_started.md)
 5. Ensure you have VS code editor configured with AI Plugin
 
-Once you have the necessary setup done, follow along the [app development guide](APP_DEV_GUIDE.md)
+Once you have the necessary setup done, follow along the [app development guide](docs/app_dev_guide.md)
