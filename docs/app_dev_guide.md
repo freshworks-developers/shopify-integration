@@ -20,7 +20,8 @@ Ensure you have the prerequisites available as mentioned in [getting_started gui
    ```
    you can Choose other product or templates as per your requirement
 4. Open a new VS Code window and open newly created app folder from within it.
-5. Use VS Code Plugin from within it to use the AI Copilot using the prompts as per [App Usecase document](USECASE.md)
+5. Use VS Code Plugin from within it to use the AI Copilot using the prompts as per [App Usecase document](usecase.md)
+6. For building along use the [Solution Guide](solution.md) for detailed instructions
 
 ## Important callouts
 

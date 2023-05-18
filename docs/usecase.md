@@ -2,7 +2,7 @@
 
 Build a Shopify app integration app with Freshdesk that meets following criteria
 
-1. Listing all the orders created by a customer in a card layouy
+1. Listing all the orders created by a customer in a card layout
 3. Creating an order from Freshdesk
 4. List purchases made by a customer
 
