@@ -1,0 +1,194 @@
+{
+	"info": {
+		"_postman_id": "f228ba16-152a-4d58-8e2f-1ad931ac2b35",
+		"name": "Shopify Store API Collection",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Get Products",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "X-Shopify-Access-Token",
+						"value": "{{shopify-access-token}}"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "{{store-uri}}/products.json",
+					"host": [
+						"{{store-uri}}"
+					],
+					"path": [
+						"products.json"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get All Orders",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "X-Shopify-Access-Token",
+						"value": "{{shopify-access-token}}"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "{{store-uri}}/orders.json",
+					"host": [
+						"{{store-uri}}"
+					],
+					"path": [
+						"orders.json"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Orders of a specific Customer",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "X-Shopify-Access-Token",
+						"value": "{{shopify-access-token}}"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "{{store-uri}}/customers/{{customer-id}}/orders.json",
+					"host": [
+						"{{store-uri}}"
+					],
+					"path": [
+						"customers",
+						"{{customer-id}}",
+						"orders.json"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get All Customers",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "X-Shopify-Access-Token",
+						"value": "{{shopify-access-token}}"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "{{store-uri}}/customers.json",
+					"host": [
+						"{{store-uri}}"
+					],
+					"path": [
+						"customers.json"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "shopify-admin-token",
+			"value": "Shopify Store front access token"
+		},
+		{
+			"key": "shopify-access-token",
+			"value": "Shopify Admin access token",
+			"type": "default"
+		},
+		{
+			"key": "shopify-api-key",
+			"value": "Shopify App API Key",
+			"type": "default"
+		},
+		{
+			"key": "shopify-app-secret",
+			"value": "Shopify App Secret",
+			"type": "default"
+		},
+		{
+			"key": "store-uri",
+			"value": "Shopify Store URI",
+			"type": "default"
+		},
+		{
+			"key": "customer-id",
+			"value": "Customer ID",
+			"type": "default"
+		}
+	]
+}

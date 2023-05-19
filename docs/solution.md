@@ -11,3 +11,15 @@
 9. Publish your app as a Custom app
 
 Note: To build along use the [input queries](input_queries.md) listed in query prompts
+
+The final app should look like below one
+
+![App placeholder](assets/app-placeholder-sf-integration.png)
+
+The Retrieve customer option should result in reponse like below one
+
+![Fetch Order](assets/app-placeholder-sf-integration.png)
+
+The Retrieve order option should result in reponse like below one
+
+![Fetch Order](assets/fetch-order-sf-integration.png)
