@@ -18,7 +18,7 @@ The final app should look like below one
 
 The Retrieve customer option should result in reponse like below one
 
-![Fetch Order](assets/app-placeholder-sf-integration.png)
+![Fetch Customers](assets/fetch-cust-sf-integration.png)
 
 The Retrieve order option should result in reponse like below one
 
