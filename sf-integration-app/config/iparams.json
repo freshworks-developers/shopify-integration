@@ -1,0 +1,14 @@
+{
+  "shopify_subdomain": {
+    "display_name": "Shopify sub domain",
+    "description": "Please enter your Shopify Store subdomain",
+    "type": "text",
+    "required": true
+  },
+  "shopify_access_token": {
+    "display_name": "Shopify Access Token",
+    "description": "Please enter your Shopify Access Token",
+    "type": "text",
+    "required": true
+  }
+}

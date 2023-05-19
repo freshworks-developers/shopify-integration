@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+  <title>A Template App</title>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script async src="{{{appclient}}}"></script>
+  <link rel="stylesheet" type="text/css" href="styles/style.css" />
+</head>
+
+<!-- This code snippet contains a series of input fields, text elements and buttons within the body of an HTML page.
+     1. An input field for a customer email with a label, placeholder and an email type validation.
+     2. A text element that will display email related errors, it will be in red color and small size.
+     3. 'Fetch Orders' button, which when clicked, will call the 'fetchCustomerOrders()' function.
+     4. 'Clear Orders' button, which when clicked, will call the 'clearCustomerOrders()' function.
+     5. 'Fetch Customers' button, which when clicked, will call the 'renderCustomerData()' function.
+     6. 'Clear Customers' button, which when clicked, will call the 'clearCustomerData()' function.  -->
+<body>
+  <div class="main">
+  </div>
+  <fw-input id="customerEmail" type="email" label="Customer Email" placeholder="Enter customer email"></fw-input><br/>
+  <fw-text id="email-error" color="red" size="small"></fw-text><br/>
+  <fw-button id="fetchOrders" color="primary" onclick="fetchCustomerOrders()">Fetch Orders</fw-button><br/><br/>
+  <fw-button id="clearOrders" color="primary" onclick="clearCustomerOrders()">Clear Orders</fw-button><br/><br/>
+  <fw-button id="fetchCustomersBtn" color="primary" onclick="renderCustomerData()">Fetch Customers</fw-button><br/><br/>
+  <fw-button id="clearCustomersBtn" color="primary" onclick="clearCustomerData()">Clear Customers</fw-button><br/><br/>
+  <fw-button id="reset" color="primary" onclick="reset()">Reset All</fw-button>
+</body>
+
+<!-- This div serves as a container for the customer cards, where the individual customer cards will be appended programmatically -->
+<div id="customer-cards-container"></div>
+
+
+<!-- A div element with the id "orderDetails" which can be used to display order related information on the web page -->
+<div id="orderDetails"></div>
+
+
+<!--
+This code snippet is responsible for validating an email address entered in the input field with the 'customerEmail' ID. It defines a validation function called 'isValidEmail', which uses a regular expression to test the input email format.
+
+The script sets up an event listener on the email input field to listen for the 'fwInput' event, which is triggered when a user enters a value in the input field. When the event fires, the isValidEmail function checks if the entered email is in a valid format. If not, an error message is displayed in the 'email-error' element. If the entered email is valid, any existing error message will be removed.
+-->
+<script>
+  const emailInput = document.getElementById('customerEmail');
+  const emailError = document.getElementById('email-error');
+
+  // Email validation function
+  function isValidEmail(email) {
+    const re = /\S+@\S+\.\S+/;
+    return re.test(email);
+  }
+
+  emailInput.addEventListener('fwInput', (e) => {
+    const email = e.detail.value;
+    if (!isValidEmail(email)) {
+      emailError.textContent = "Please enter a valid email address";
+    } else {
+      emailError.textContent = "";
+    }
+  });
+</script>
+
+
+<script defer src="scripts/app.js"></script>
+<script type="module" src="https://cdn.jsdelivr.net/npm/@freshworks/crayons@v4/dist/crayons/crayons.esm.js"></script>
+<script nomodule src="https://cdn.jsdelivr.net/npm/@freshworks/crayons@v4/dist/crayons/crayons.js"></script>
+</html>
