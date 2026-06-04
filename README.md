@@ -1,5 +1,7 @@
 # Shopify Integration — Freshdesk
 
+![Shopify to Freshdesk — fetch Shopify orders and customers in the ticket sidebar](shopify-banner.png)
+
 A **Freshdesk ticket sidebar** app that pulls **Shopify customers** and **orders** into the agent view using Crayons UI and Platform request templates.
 
 | | |
