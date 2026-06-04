@@ -1,10 +1,14 @@
-var client;
-
 init();
 
 async function init() {
-  client = await app.initialized();
-  client.events.on('app.activated', resizeApp);
+  const appClient = await app.initialized();
+  window.client = appClient;
+  appClient.events.on('app.activated', resizeApp);
+  window.fetchCustomerOrders = fetchCustomerOrders;
+  window.renderCustomerData = renderCustomerData;
+  window.clearCustomerOrders = clearCustomerOrders;
+  window.clearCustomerData = clearCustomerData;
+  window.reset = reset;
 }
 
 /**
@@ -14,9 +18,9 @@ async function init() {
  */
 async function resizeApp() {
   try {
-    await client.instance.resize({ height: "600px" });
-  } catch (error) {
-    console.error("failed to resize");
+    await window.client.instance.resize({ height: '600px' });
+  } catch (err) {
+    console.error('failed to resize', err);
   }
 }
 
@@ -32,7 +36,7 @@ async function resizeApp() {
 async function fetchShopifyCustomers() {
   clearCustomerOrders();
   try {
-    const custResponse = JSON.parse((await client.request.invokeTemplate("fetchCustomers", {})).response);
+    const custResponse = JSON.parse((await window.client.request.invokeTemplate('fetchCustomers', {})).response);
     console.log("Shopify customers:", custResponse);
     return custResponse;
   } catch (error) {
@@ -56,16 +60,12 @@ async function fetchShopifyCustomers() {
  *
  * @returns {string} An HTML string representing the accordion card with customer details.
  */
+function customerField(customer, key, fallback) {
+  return customer[key] || fallback;
+}
+
 function createCard(customer) {
-  const {
-    first_name = '',
-    last_name = '',
-    phone = 'NA',
-    email = 'NA',
-    address = 'NA',
-    orders_count = 'NA',
-    last_order_id = 'NA',
-  } = customer;
+  const name = `${customerField(customer, 'first_name', '')} ${customerField(customer, 'last_name', '')}`.trim();
 
   return `
     <br />
@@ -73,14 +73,14 @@ function createCard(customer) {
       <div class="fw-card-1 fw-py-8 fw-px-16 fw-flex fw-flex-row">
         <section class="fw-flex-grow fw-px-24 fw-flex fw-flex-column">
           <fw-accordion-title>
-            <p class="fw-type-xs fw-mt-0 fw-mb-16"><b>Name: </b>${first_name} ${last_name}</p>
-            <p class="fw-type-xs fw-mt-0 fw-mb-16"><b>Phone: </b>${phone}</p>
+            <p class="fw-type-xs fw-mt-0 fw-mb-16"><b>Name: </b>${name}</p>
+            <p class="fw-type-xs fw-mt-0 fw-mb-16"><b>Phone: </b>${customerField(customer, 'phone', 'NA')}</p>
           </fw-accordion-title>
           <fw-accordion-body>
-            <p><b>Email:</b> ${email}</p>
-            <p><b>Address:</b> ${address}</p>
-            <p><b>Total Orders:</b> ${orders_count}</p>
-            <p><b>Last Order ID:</b> ${last_order_id}</p>
+            <p><b>Email:</b> ${customerField(customer, 'email', 'NA')}</p>
+            <p><b>Address:</b> ${customerField(customer, 'address', 'NA')}</p>
+            <p><b>Total Orders:</b> ${customerField(customer, 'orders_count', 'NA')}</p>
+            <p><b>Last Order ID:</b> ${customerField(customer, 'last_order_id', 'NA')}</p>
           </fw-accordion-body>
         </section>
       </div>
@@ -98,7 +98,7 @@ async function renderCustomerData() {
   // Fetches customer data by calling the 'fetchShopifyCustomers' async function
   const customersData = await fetchShopifyCustomers();
   
-  if(customersData.length != 0){
+  if (customersData && customersData.customers && customersData.customers.length !== 0) {
     // Gets the container element for customer cards by its ID
     const cardsContainer = document.getElementById('customer-cards-container');
     // Iterates over the fetched customers, creates a card for each customer,
@@ -135,7 +135,7 @@ function clearCustomerData() {
  * It does so by targeting an element with the ID 'orderDetails'
  * and setting its innerHTML content to an empty string.
  */
-async function clearCustomerOrders() {
+function clearCustomerOrders() {
   const inputField = document.getElementById('customerEmail');
   inputField.value = '';
   const cardsContainer = document.getElementById('orderDetails');
@@ -161,7 +161,7 @@ async function fetchCustomerOrders() {
   try {
     // Invoke template defined in config/requests.json to fetch customer orders using the provided email
     console.log(customerEmail);
-    let customerOrders = await client.request.invokeTemplate("fetchCustomerOrders", {
+    const customerOrders = await window.client.request.invokeTemplate('fetchCustomerOrders', {
       context: { customer_email: customerEmail }
     });
 
@@ -181,7 +181,7 @@ async function fetchCustomerOrders() {
 }
 
 
-async function reset(){
+function reset() {
   clearCustomerData();
   clearCustomerOrders();
 }
@@ -191,30 +191,37 @@ async function reset(){
 // ID, customer name, email, total price, status, and creation date, and formats them
 // into Crayons' Accordion components. These accordions are then added as HTML content
 // inside an element with ID 'orderDetails'.
-function displayOrderDetails(orders) {
-  const orderDetails = document.getElementById('orderDetails');
+function orderField(order, key, fallback) {
+  return order[key] || fallback;
+}
 
-  orders.orders.forEach(order => {
-    const orderCard = `
+function createOrderCard(order) {
+  const buyer = order.customer || {};
+  const buyerName = `${orderField(buyer, 'first_name', '-')} ${orderField(buyer, 'last_name', '-')}`.trim();
+  const createdAt = order.created_at ? new Date(order.created_at).toLocaleString() : '-';
+
+  return `
       <br/>
       <fw-accordion>
         <fw-accordion-title>
-          <h5 class="fw-type-h5 fw-m-0">Order ID: ${order.id ? order.id : '-'}</h5>
+          <h5 class="fw-type-h5 fw-m-0">Order ID: ${orderField(order, 'id', '-')}</h5>
         </fw-accordion-title>
         <fw-accordion-body>
           <div class="fw-card-1 fw-py-16 fw-px-20 fw-flex fw-flex-column">
-            <p class="fw-type-xs fw-mt-0 fw-mb-16"><b>Customer</b>: ${order.customer.first_name ? order.customer.first_name : '-' } ${order.customer.last_name ? order.customer.last_name : '-'}</p>
-            <p class="fw-type-xs fw-mt-0 fw-mb-16"><b>Email</b>: ${order.customer.email ? order.customer.email : 'NA'}</p>
+            <p class="fw-type-xs fw-mt-0 fw-mb-16"><b>Customer</b>: ${buyerName}</p>
+            <p class="fw-type-xs fw-mt-0 fw-mb-16"><b>Email</b>: ${orderField(buyer, 'email', 'NA')}</p>
             <section class="fw-type-xs fw-flex fw-flex-row options">
-              <span><b>Total</b>: $${order.total_price ? order.total_price : '-'}</span><br/>
-              <span><b>Status</b>: ${order.financial_status ? order.financial_status : '-'}</span><br/>
-              <span><b>Created at</b>: ${order.created_at ? new Date(order.created_at).toLocaleString() : '-'}</span>
+              <span><b>Total</b>: $${orderField(order, 'total_price', '-')}</span><br/>
+              <span><b>Status</b>: ${orderField(order, 'financial_status', '-')}</span><br/>
+              <span><b>Created at</b>: ${createdAt}</span>
             </section>
           </div>
         </fw-accordion-body>
       </fw-accordion>
       `;
+}
 
-    orderDetails.innerHTML += orderCard;
-  });
+function displayOrderDetails(orders) {
+  const orderDetails = document.getElementById('orderDetails');
+  orderDetails.innerHTML = orders.orders.map((order) => createOrderCard(order)).join('');
 }

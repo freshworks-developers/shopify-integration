@@ -9,6 +9,7 @@
     "display_name": "Shopify Access Token",
     "description": "Please enter your Shopify Access Token",
     "type": "text",
-    "required": true
+    "required": true,
+    "secure": true
   }
 }
