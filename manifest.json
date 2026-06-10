@@ -1,17 +1,27 @@
 {
   "platform-version": "3.0",
+  "app": {
+    "tracking_id": "shopifyint000001",
+    "start_time": "2026-06-10T10:00:00.000Z"
+  },
+  "metaConfig": {
+    "framework": "react"
+  },
   "modules": {
     "common": {
       "requests": {
         "fetchCustomerOrders": {},
-        "fetchCustomers": {}
+        "fetchCustomers": {},
+        "fetchOrderById": {},
+        "fetchOrders": {},
+        "searchCustomers": {}
       }
     },
     "support_ticket": {
       "location": {
         "ticket_sidebar": {
-          "url": "index.html",
-          "icon": "styles/images/icon.svg"
+          "url": "sidebar.html",
+          "icon": "icon.svg"
         }
       }
     }

@@ -6,7 +6,7 @@ export default defineConfig({
     environment: 'jsdom',
     coverage: {
       provider: 'v8',
-      include: ['app/scripts/**/*.js'],
+      include: ['app/utils/**/*.js'],
       reportsDirectory: 'coverage/unit',
       reporter: ['json', 'text']
     }

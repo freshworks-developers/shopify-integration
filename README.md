@@ -2,48 +2,135 @@
 
 ![Shopify to Freshdesk — fetch Shopify orders and customers in the ticket sidebar](shopify-banner.png)
 
-A **Freshdesk ticket sidebar** app that pulls **Shopify customers** and **orders** into the agent view using Crayons UI and Platform request templates.
+A **Freshdesk ticket sidebar** app that pulls **Shopify customers** and **orders** into the agent view. Built with [React Meta](https://developers.freshworks.com/docs/app-sdk/v3.0/support_ticket/front-end-apps/react-meta/), **Crayons React**, and Platform [request templates](https://developers.freshworks.com/docs/app-sdk/v3.0/support_ticket/advanced-interfaces/request-method/).
 
 | | |
 |---|---|
 | **Platform** | 3.0 |
+| **Framework** | React Meta |
 | **Surface** | `ticket_sidebar` |
 | **Node** | 24.11.1 |
 | **FDK** | 10.1.2 |
 
 ---
 
-## Screenshots
+## What it does
 
-### Ticket sidebar (default view)
+Agents on a ticket can:
 
-Email input, action buttons, and Crayons layout in the Freshdesk ticket sidebar.
+- Look up **orders** by customer email ([Shopify Orders API](https://shopify.dev/docs/api/admin-rest/latest/resources/order))
+- Browse **customers** as accordion cards ([Shopify Customers API](https://shopify.dev/docs/api/admin-rest/latest/resources/customer))
+- Clear results or reset the form between lookups
 
-![Shopify integration app in Freshdesk ticket sidebar](docs/assets/app-placeholder-sf-integration.png)
-
-### Fetch Customers
-
-Customer list rendered as accordion cards from the Shopify Admin API.
-
-![Fetch Customers — Shopify customer cards in the sidebar](docs/assets/fetch-cust-sf-integration.png)
-
-### Fetch Orders
-
-Orders for the entered customer email, shown as expandable order cards.
-
-![Fetch Orders — Shopify orders by customer email](docs/assets/fetch-order-sf-integration.png)
+Shopify calls use request templates (`fetchCustomers`, `fetchCustomerOrders` in [`config/requests.json`](config/requests.json)). Credentials are stored in [installation parameters](https://developers.freshworks.com/docs/app-sdk/v3.0/support_ticket/app-settings/installation-parameters/) — the access token is secure.
 
 ---
 
-## What it does
+## Prerequisites
 
-Agents working a ticket can:
+| Requirement | Link / notes |
+|-------------|----------------|
+| **Node.js 24.x** | [Node downloads](https://nodejs.org/) |
+| **FDK 10.1.2** | [Freshworks FDK setup](https://developers.freshworks.com/docs/app-sdk/v3.0/common/freshworks-cli-setup/) |
+| **Freshdesk dev account** | Your Freshdesk site URL (e.g. `https://acme.freshdesk.com`) |
+| **Shopify store** | [Shopify Admin](https://admin.shopify.com/) with permission to create custom apps |
+| **Admin API token** | Scopes: `read_customers`, `read_orders` — see [Step 1](#step-1--create-a-shopify-custom-app) |
 
-- Look up **orders** for a customer email
-- Browse a sample list of **Shopify customers** in accordion cards
-- Clear results and reset the form between lookups
+---
 
-All Shopify calls run through **request templates** (`fetchCustomers`, `fetchCustomerOrders`). Store credentials stay in **installation parameters** (access token is secure).
+## Step 1 — Create a Shopify custom app
+
+Create a **custom app** in your store (not an embedded Partner app). The Freshdesk sidebar only needs an Admin API token — no App URL or OAuth redirect.
+
+1. Open [Shopify Admin](https://admin.shopify.com/) → **Settings** → **Apps and sales channels** → **Develop apps**.
+   - Docs: [Create and install a custom app](https://shopify.dev/docs/apps/build/dev-dashboard/create-apps-using-dev-dashboard)
+2. Click **Create an app** (e.g. `Freshdesk integration`).
+3. Under **Configuration** → **Admin API integration**, set **Admin API access scopes**:
+   ```
+   read_customers,read_orders
+   ```
+   - Scope reference: [Shopify access scopes](https://shopify.dev/docs/api/usage/access-scopes)
+4. Click **Save**, then **Install app** on your store.
+5. Open **API credentials** and copy:
+   - **Admin API access token** (starts with `shpat_…`) — use this in Freshdesk, **not** the Storefront token
+   - Your store subdomain from `your-store.myshopify.com` → subdomain is `your-store`
+
+| Freshdesk iparam | Where to get it |
+|------------------|-----------------|
+| **Shopify sub domain** | `your-store` from `your-store.myshopify.com` |
+| **Shopify Access Token** | Custom app → **API credentials** → **Admin API access token** |
+
+---
+
+## Step 2 — Install dependencies and validate
+
+From this folder:
+
+```bash
+cd only-migration/shopify-integration
+npm install
+fdk config set global_apps.enabled true
+fdk validate
+```
+
+`global_apps.enabled` is required because request templates are declared under `modules.common` — see [global app concepts](https://developers.freshworks.com/docs/app-sdk/v3.0/common/global-app-concepts/).
+
+Expected: **0 platform errors**, **0 lint errors**.
+
+---
+
+## Step 3 — Run locally
+
+```bash
+fdk run
+```
+
+Keep this terminal running. The FDK serves the app and opens local developer tools.
+
+| Local URL | Purpose |
+|-----------|---------|
+| [http://localhost:10001/custom_configs](http://localhost:10001/custom_configs) | Enter iparams (subdomain + token) |
+| [http://localhost:10001/system_settings](http://localhost:10001/system_settings) | Account URLs and module subscription |
+| [http://localhost:10001/web/test](http://localhost:10001/web/test) | Webhook / event testing (not used by this app) |
+
+Docs: [Test your app](https://developers.freshworks.com/docs/app-sdk/v3.0/support_ticket/basic-dev-tools/freshworks-cli-setup/test-your-app/)
+
+---
+
+## Step 4 — Configure installation parameters
+
+1. With `fdk run` active, open **[http://localhost:10001/custom_configs](http://localhost:10001/custom_configs)**.
+2. Enter:
+   - **Shopify sub domain** — e.g. `your-store`
+   - **Shopify Access Token** — Admin API token from [Step 1](#step-1--create-a-shopify-custom-app)
+3. Click **Save**.
+
+These map to [`config/iparams.json`](config/iparams.json) and are substituted into [`config/requests.json`](config/requests.json) at runtime.
+
+---
+
+## Step 5 — Test in Freshdesk
+
+1. Open your Freshdesk site with dev mode:
+   - `https://<your-domain>.freshdesk.com/a/?dev=true`
+   - If the URL already has query params, use `&dev=true` instead of `?dev=true`
+2. When the browser prompts, **allow local network access** (required for `fdk run`).
+3. Open any **ticket**.
+4. In the right **Apps** panel, launch **Shopify Integration**.
+5. Try:
+   - Enter a customer email → **Fetch Orders**
+   - **Fetch Customers** to list store customers
+   - **Reset All** to clear the sidebar
+
+---
+
+## Screenshots
+
+| View | |
+|------|---|
+| Ticket sidebar | ![Default sidebar](docs/assets/app-placeholder-sf-integration.png) |
+| Fetch Customers | ![Customer cards](docs/assets/fetch-cust-sf-integration.png) |
+| Fetch Orders | ![Order cards](docs/assets/fetch-order-sf-integration.png) |
 
 ---
 
@@ -52,76 +139,44 @@ All Shopify calls run through **request templates** (`fetchCustomers`, `fetchCus
 | Button | Action |
 |--------|--------|
 | **Fetch Orders** | Loads orders for the email in the input field |
-| **Clear Orders** | Clears the email field and order list |
-| **Fetch Customers** | Loads customer cards from your Shopify store |
-| **Clear Customers** | Removes customer cards from the sidebar |
-| **Reset All** | Clears both customers and orders |
-
-Built with **Crayons** components: `fw-input`, `fw-button`, `fw-accordion`, `fw-text`.
+| **Clear Orders** | Clears email and order list |
+| **Fetch Customers** | Loads customer accordion cards from Shopify |
+| **Clear Customers** | Removes customer cards |
+| **Reset All** | Clears customers, orders, and status messages |
 
 ---
 
-## Prerequisites
+## Project structure
 
-- Node **24.11.1** and FDK **10.1.2**
-- A Freshdesk account for local testing (`?dev=true`)
-- A Shopify store and **Admin API access token**
-- Shopify API version in requests: `2023-04` (see `config/requests.json`)
-
----
-
-## Step 1 — Shopify credentials
-
-### 1.1 Create a custom app in Shopify
-
-1. In Shopify Admin, go to **Settings** → **Apps and sales channels** → **Develop apps**.
-2. **Create an app** (e.g. `Freshdesk integration`).
-3. Configure **Admin API scopes** needed for customers and orders (e.g. `read_customers`, `read_orders`).
-4. **Install** the app on your store.
-
-### 1.2 Copy install values
-
-| Install parameter | Where to find it |
-|-------------------|------------------|
-| **Shopify sub domain** | Store URL: `your-store` from `your-store.myshopify.com` |
-| **Shopify Access Token** | App → **API credentials** → **Admin API access token** |
-
-Use the **Admin API** token, not the Storefront token.
-
----
-
-## Step 2 — Run locally
-
-```bash
-cd only-migration/shopify-integration/sf-integration-app
-npm install
-fdk config set global_apps.enabled true
-fdk validate
-fdk run
+```
+shopify-integration/
+├── manifest.json                 # React Meta + request template declarations
+├── package.json
+├── app/
+│   ├── sidebar.html              # ticket_sidebar entry
+│   ├── components/               # ShopifyMain, ShopifyApp, CustomerCard, OrderCard
+│   ├── utils/                    # shopify-api.js, validation.js
+│   └── styles/
+├── config/
+│   ├── iparams.json
+│   └── requests.json             # Shopify Admin API 2023-04
+├── tests/
+│   └── shopify-api.test.js
+└── docs/
+    ├── usecase.md
+    ├── solution.md
+    ├── app_dev_guide.md
+    └── assets/shopify-api-collection.json
 ```
 
-Keep `fdk run` running.
-
 ---
 
-## Step 3 — Developer settings
+## Testing
 
-With `fdk run` active:
-
-1. Open **http://localhost:10001/custom_configs**
-2. Enter **Shopify sub domain** and **Shopify Access Token**
-3. Save
-
-Alternative: **http://localhost:10001/system_settings**
-
----
-
-## Step 4 — Test in Freshdesk
-
-1. Open your Freshdesk site with **`?dev=true`** (use **`&dev=true`** if the URL already has query params).
-2. Allow **local network** access when prompted.
-3. Open a ticket → **Apps** sidebar → launch this app.
-4. Enter a customer email → **Fetch Orders**, or try **Fetch Customers**.
+```bash
+npm test
+fdk validate
+```
 
 ---
 
@@ -129,39 +184,34 @@ Alternative: **http://localhost:10001/system_settings**
 
 | Symptom | What to check |
 |---------|----------------|
-| Request fails / 401 | Correct subdomain and Admin API token; app installed on store |
-| No customers returned | Store has customers; API scopes include customer read |
-| No orders for email | Valid email with orders in Shopify; try another address |
-| `fdk validate` — global apps error | Run `fdk config set global_apps.enabled true` |
-| App does not load | `fdk run` running; `?dev=true`; local network allowed |
+| **401 / request fails** | Correct subdomain and **Admin API** token; custom app installed on the store |
+| **No customers** | Store has customers; scopes include `read_customers` |
+| **No orders for email** | Email has orders in Shopify; scopes include `read_orders` |
+| **global apps validation error** | Run `fdk config set global_apps.enabled true` |
+| **App does not appear** | `fdk run` is running; URL has `?dev=true`; local network allowed |
+| **Invalid scopes in Partner dashboard** | This app uses **store custom apps**, not embedded Partner OAuth — see [Step 1](#step-1--create-a-shopify-custom-app) |
 
 ---
 
-## Project layout
+## Related documentation
 
-```
-sf-integration-app/
-├── app/
-│   ├── index.html
-│   ├── scripts/app.js
-│   └── styles/
-├── config/
-│   ├── iparams.json
-│   └── requests.json
-├── tests/
-├── manifest.json
-└── README.md
-```
+### Freshworks
 
-Screenshots: `../docs/assets/*.png` · Guides: `../docs/app_dev_guide.md`, `../docs/solution.md`
+- [Request method](https://developers.freshworks.com/docs/app-sdk/v3.0/support_ticket/advanced-interfaces/request-method/)
+- [Installation parameters](https://developers.freshworks.com/docs/app-sdk/v3.0/support_ticket/app-settings/installation-parameters/)
+- [Ticket sidebar placement](https://developers.freshworks.com/docs/app-sdk/v3.0/support_ticket/front-end-apps/app-locations/#ticket-sidebar)
+- [Freshworks CLI — `fdk run`](https://developers.freshworks.com/docs/app-sdk/v3.0/common/freshworks-cli-setup/)
 
----
+### Shopify
 
-## Validation
+- [Custom apps in Shopify Admin](https://shopify.dev/docs/apps/build/dev-dashboard/create-apps-using-dev-dashboard)
+- [Admin REST API — Customers](https://shopify.dev/docs/api/admin-rest/latest/resources/customer)
+- [Admin REST API — Orders](https://shopify.dev/docs/api/admin-rest/latest/resources/order)
+- [Access scopes](https://shopify.dev/docs/api/usage/access-scopes)
 
-```bash
-fdk validate
-npm run fdk-unit-test
-```
+### Repo guides
 
-Target: **0 platform errors**, **0 lint errors**.
+- [Use case](docs/usecase.md)
+- [Solution walkthrough](docs/solution.md)
+- [App development guide](docs/app_dev_guide.md)
+- [Shopify API collection](docs/assets/shopify-api-collection.json)
