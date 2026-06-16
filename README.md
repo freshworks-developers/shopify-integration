@@ -14,6 +14,58 @@ A **Freshdesk ticket sidebar** app that pulls **Shopify customers** and **orders
 
 ---
 
+## Description
+
+StyleHub Retail agents resolve post-purchase tickets faster when Shopify order and customer data appears beside the Freshdesk thread. See [`usecase.md`](usecase.md) for the full StyleHub operational scenarios.
+
+### Core Functionality
+
+1. Look up **orders** by customer email via Shopify Admin REST API request templates
+2. Browse and **search customers** as accordion cards with local filtering
+3. Fetch a single order by **order ID** when email context is wrong or missing
+4. **Paginate** large customer and order lists with load-more controls
+5. Store Shopify credentials in secure **installation parameters** — tokens never reach the frontend
+
+---
+
+## User Interfaces
+
+| Surface | Placement | Behavior |
+| --- | --- | --- |
+| `app/sidebar.html` | `support_ticket.ticket_sidebar` | Customers tab, orders tab, search, and fetch actions |
+
+## Platform 3.0 Features Used
+
+### 1. Request Methods — Shopify Admin REST API
+
+`config/requests.json` defines `fetchCustomers`, `searchCustomers`, `fetchCustomerOrders`, `fetchOrderById`, and related templates. FDK injects `shopify_subdomain` and secure `shopify_access_token` at runtime.
+
+### 2. Installation Parameters — Store Credentials
+
+Subdomain and Admin API token are collected at install via `config/iparams.json`. The access token is marked secure and used only in request templates.
+
+### 3. React Meta — Ticket Sidebar UI
+
+`metaConfig.framework: "react"` bundles `ShopifyMain`, tab panels, and Crayons components through the FDK Vite pipeline.
+
+### 4. Interface Methods — Agent Feedback
+
+`client.interface.trigger('showNotify')` surfaces fetch errors and empty-result hints without leaving the sidebar.
+
+### 5. Crayons UI Components
+
+The app uses Freshworks Crayons v4 design system:
+
+| Component | Usage |
+| --- | --- |
+| `FwButton` | Search, load, clear, and tab actions |
+| `FwInput` | Customer and order search fields |
+| `FwSpinner` | Loading states during Shopify fetches |
+| `FwInlineMessage` | Inline status and error banners |
+| `FwAccordion` / cards | Customer detail expansion |
+
+---
+
 ## What it does
 
 Agents on a ticket can:
@@ -162,8 +214,8 @@ shopify-integration/
 │   └── requests.json             # Shopify Admin API 2023-04
 ├── tests/
 │   └── shopify-api.test.js
+├── usecase.md
 └── docs/
-    ├── usecase.md
     ├── solution.md
     ├── app_dev_guide.md
     └── assets/shopify-api-collection.json
@@ -177,6 +229,22 @@ shopify-integration/
 npm test
 fdk validate
 ```
+
+Reset local installation parameters when re-testing iparams:
+
+```bash
+rm .fdk/store.sqlite
+fdk run
+```
+
+---
+
+## Key Learnings
+
+1. **Secure tokens in templates only** — never pass `shopify_access_token` to React state; invoke request templates from the client.
+2. **Global app requests** — declare templates under `modules.common` and enable `fdk config set global_apps.enabled true`.
+3. **Pagination over bulk fetch** — use `since_id` and load-more for large Shopify catalogs instead of single giant responses.
+4. **Validate before invoke** — check email and order ID format client-side to avoid needless 404/400 API calls.
 
 ---
 
@@ -211,7 +279,7 @@ fdk validate
 
 ### Repo guides
 
-- [Use case](docs/usecase.md)
+- [Use case](usecase.md)
 - [Solution walkthrough](docs/solution.md)
 - [App development guide](docs/app_dev_guide.md)
 - [Shopify API collection](docs/assets/shopify-api-collection.json)
